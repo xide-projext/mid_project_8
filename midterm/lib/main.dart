@@ -11,7 +11,30 @@ class BudgetApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.green,
       ),
-      home: const BudgetScreen(),
+      home: const MainPage(),
+    );
+  }
+}
+
+class MainPage extends StatelessWidget {
+  const MainPage({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('현재 자산'),
+      ),
+      body: const Center(child: Text('This is a new page.')),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const BudgetScreen()),
+          );
+        },
+        child: const Icon(Icons.add),
+      ),
     );
   }
 }
@@ -31,7 +54,7 @@ class BudgetScreenState extends State<BudgetScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Budget'),
+        title: const Text('내역 조회'),
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -39,7 +62,7 @@ class BudgetScreenState extends State<BudgetScreen> {
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             child: Text(
-              'Income',
+              '수익',
               style: TextStyle(fontSize: 24.0),
             ),
           ),
@@ -48,7 +71,7 @@ class BudgetScreenState extends State<BudgetScreen> {
             child: TextField(
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(
-                hintText: 'Enter your monthly income',
+                hintText: '월 수익 입력',
               ),
               onChanged: (value) {
                 setState(() {
@@ -60,7 +83,7 @@ class BudgetScreenState extends State<BudgetScreen> {
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             child: Text(
-              'Expenses',
+              '지출',
               style: TextStyle(fontSize: 24.0),
             ),
           ),
@@ -69,7 +92,7 @@ class BudgetScreenState extends State<BudgetScreen> {
             child: TextField(
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(
-                hintText: 'Enter your monthly expenses',
+                hintText: '월 지출 입력',
               ),
               onChanged: (value) {
                 setState(() {
@@ -133,7 +156,7 @@ class BudgetScreenState extends State<BudgetScreen> {
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const NewPage()),
+            MaterialPageRoute(builder: (context) => const ExtraBudgetScreen()),
           );
         },
         child: const Icon(Icons.add),
@@ -142,16 +165,18 @@ class BudgetScreenState extends State<BudgetScreen> {
   }
 }
 
-class NewPage extends StatelessWidget {
-  const NewPage({Key? key}) : super(key: key);
+class ExtraBudgetScreen extends StatelessWidget {
+  const ExtraBudgetScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('내역 조회'),
+        title: const Text('자산 상세 정보'),
       ),
-      body: const Center(child: Text('This is a new page.')),
+      body: const Center(
+        child: Text('금액'),
+      ),
     );
   }
 }
