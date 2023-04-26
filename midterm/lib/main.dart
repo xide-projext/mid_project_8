@@ -99,7 +99,8 @@ class BudgetScreenState extends State<BudgetScreen> {
         title: const Text('내역 조회'),
       ),
       body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
           Padding(
             padding:
@@ -144,6 +145,13 @@ class BudgetScreenState extends State<BudgetScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: LinearProgressIndicator(
               value: _income == 0.0 ? 0.0 : _expenses / _income,
+            ),
+          ),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: Text(
+              '수익',
+              style: TextStyle(fontSize: 24.0),
             ),
           ),
           Padding(
