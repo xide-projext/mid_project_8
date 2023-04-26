@@ -16,26 +16,68 @@ class BudgetApp extends StatelessWidget {
   }
 }
 
-class MainPage extends StatelessWidget {
+class MainPage extends StatefulWidget {
   const MainPage({Key? key}) : super(key: key);
+  @override
+  MainPageState createState() => MainPageState();
+}
+
+class MainPageState extends State<MainPage> {
+  final double _asset = 1000000.0;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('현재 자산'),
-      ),
-      body: const Center(child: Text('This is a new page.')),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const BudgetScreen()),
-          );
-        },
-        child: const Icon(Icons.add),
-      ),
-    );
+        appBar: AppBar(
+          title: const Text('홈'),
+        ),
+        body: Center(
+          child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                const Padding(
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  child: Text(
+                    '현재 자산',
+                    style: TextStyle(fontSize: 24.0),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Text(
+                    '\u20A9${(_asset).toStringAsFixed(2)}',
+                    style: const TextStyle(
+                        fontSize: 36.0, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0, vertical: 8.0),
+                  child: Container(
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const BudgetScreen(),
+                          ),
+                        );
+                      },
+                      child: const Text(
+                        '내역 조회',
+                        style: TextStyle(
+                          fontSize: 24.0,
+                          decoration: TextDecoration.none,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ]),
+        ));
   }
 }
 
@@ -48,7 +90,7 @@ class BudgetScreen extends StatefulWidget {
 class BudgetScreenState extends State<BudgetScreen> {
   double _income = 0.0;
   double _expenses = 0.0;
-  double _savingsGoal = 0.0;
+  double _asset = 1000000.0;
 
   @override
   Widget build(BuildContext context) {
@@ -59,11 +101,49 @@ class BudgetScreenState extends State<BudgetScreen> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
+          Padding(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: Container(
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ExtraBudgetScreen(),
+                    ),
+                  );
+                },
+                child: const Text(
+                  '자산',
+                  style: TextStyle(
+                    fontSize: 24.0,
+                    decoration: TextDecoration.none,
+                    color: Colors.black,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Text(
+              '\u20A9${(_asset + _income - _expenses).toStringAsFixed(2)}',
+              style:
+                  const TextStyle(fontSize: 36.0, fontWeight: FontWeight.bold),
+            ),
+          ),
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             child: Text(
-              '수익',
+              '월 수익 대비 지출',
               style: TextStyle(fontSize: 24.0),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: LinearProgressIndicator(
+              value: _income == 0.0 ? 0.0 : _expenses / _income,
             ),
           ),
           Padding(
@@ -101,72 +181,14 @@ class BudgetScreenState extends State<BudgetScreen> {
               },
             ),
           ),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: Text(
-              'Savings Goal',
-              style: TextStyle(fontSize: 24.0),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: TextField(
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                hintText: 'Enter your savings goal',
-              ),
-              onChanged: (value) {
-                setState(() {
-                  _savingsGoal = double.tryParse(value) ?? 0.0;
-                });
-              },
-            ),
-          ),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: Text(
-              'Total Remaining',
-              style: TextStyle(fontSize: 24.0),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Text(
-              '\₩${(_income - _expenses).toStringAsFixed(2)}',
-              style:
-                  const TextStyle(fontSize: 36.0, fontWeight: FontWeight.bold),
-            ),
-          ),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: Text(
-              'Savings Progress',
-              style: TextStyle(fontSize: 24.0),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: LinearProgressIndicator(
-              value: _income == 0.0 ? 0.0 : _expenses / _income,
-            ),
-          ),
         ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const ExtraBudgetScreen()),
-          );
-        },
-        child: const Icon(Icons.add),
       ),
     );
   }
 }
 
 class ExtraBudgetScreen extends StatefulWidget {
-  const ExtraBudgetScreen({Key? key}) : super(key: key);
+  const ExtraBudgetScreen({super.key});
 
   @override
   ExtraBudgetScreenState createState() => ExtraBudgetScreenState();
@@ -303,7 +325,7 @@ class ExtraBudgetScreenState extends State {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Text(
-              '\₩${(_cash + _stock + _realestate + _crypto + _other).toStringAsFixed(2)}',
+              '\u20A9${(_cash + _stock + _realestate + _crypto + _other).toStringAsFixed(2)}',
               style:
                   const TextStyle(fontSize: 36.0, fontWeight: FontWeight.bold),
             ),
