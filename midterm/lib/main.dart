@@ -183,7 +183,8 @@ class BudgetScreenState extends State<BudgetScreen> {
 
   Future<void> _saveData() async {
     final prefs = await SharedPreferences.getInstance();
-    final jsonData = json.encode({'income': _income, 'expenses': _expenses, 'asset': _asset});
+    final jsonData = json
+        .encode({'income': _income, 'expenses': _expenses, 'asset': _asset});
     await prefs.setString('budget_data', jsonData);
   }
 
@@ -248,11 +249,21 @@ class BudgetScreenState extends State<BudgetScreen> {
               value: _income == 0.0 ? 0.0 : _expenses / _income,
             ),
           ),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: Text(
-              '수익',
-              style: TextStyle(fontSize: 24.0),
+          Padding(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  '수익',
+                  style: TextStyle(fontSize: 24.0),
+                ),
+                Text(
+                  '\u20A9${(_income).toStringAsFixed(2)}',
+                  style: const TextStyle(fontSize: 24.0),
+                ),
+              ],
             ),
           ),
           Padding(
@@ -269,11 +280,21 @@ class BudgetScreenState extends State<BudgetScreen> {
               },
             ),
           ),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: Text(
-              '지출',
-              style: TextStyle(fontSize: 24.0),
+          Padding(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  '지출',
+                  style: TextStyle(fontSize: 24.0),
+                ),
+                Text(
+                  '\u20A9${(_expenses).toStringAsFixed(2)}',
+                  style: const TextStyle(fontSize: 24.0),
+                ),
+              ],
             ),
           ),
           Padding(
@@ -309,7 +330,8 @@ class ExtraBudgetScreenState extends State {
   static double _realestate = 0.0;
   static double _crypto = 0.0;
   static double _other = 0.0;
-  static double get totalAssets => _cash + _stock + _realestate + _crypto + _other;
+  static double get totalAssets =>
+      _cash + _stock + _realestate + _crypto + _other;
 
   @override
   void initState() {
@@ -368,7 +390,8 @@ class ExtraBudgetScreenState extends State {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -398,7 +421,8 @@ class ExtraBudgetScreenState extends State {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -428,7 +452,8 @@ class ExtraBudgetScreenState extends State {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -458,7 +483,8 @@ class ExtraBudgetScreenState extends State {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -488,13 +514,14 @@ class ExtraBudgetScreenState extends State {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text(
-              '이외 자산',
-              style: TextStyle(fontSize: 24.0),
+                  '이외 자산',
+                  style: TextStyle(fontSize: 24.0),
                 ),
                 Text(
                   '\u20A9${(_other).toStringAsFixed(2)}',
