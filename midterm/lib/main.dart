@@ -37,7 +37,7 @@ class MyData {
 }
 
 class BudgetApp extends StatelessWidget {
-  const BudgetApp({super.key});
+  const BudgetApp({Key? key}) : super(key: key);
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -45,13 +45,16 @@ class BudgetApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.green,
       ),
-      home: const MainPage(),
+      home: const MainPage(budget: 0.0),
     );
   }
 }
 
 class MainPage extends StatefulWidget {
-  const MainPage({Key? key}) : super(key: key);
+  final double budget;
+
+  const MainPage({Key? key, required this.budget}) : super(key: key);
+
   @override
   MainPageState createState() => MainPageState();
 }
@@ -313,6 +316,16 @@ class BudgetScreenState extends State<BudgetScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  void navigateToMainPage() {
+    final budgetScreenState = BudgetScreenState();
+    final budget = budgetScreenState._asset;
+    final mainPage = MainPage(budget: budget);
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => mainPage),
     );
   }
 }
