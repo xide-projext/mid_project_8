@@ -45,61 +45,31 @@ class BudgetApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.green,
       ),
-      home: const MainPage(budget: 0.0),
+      home: MainPage(),
     );
   }
 }
 
 class MainPage extends StatefulWidget {
-  final double budget;
-
-  const MainPage({Key? key, required this.budget}) : super(key: key);
+  const MainPage({Key? key}) : super(key: key);
 
   @override
   MainPageState createState() => MainPageState();
 }
 
 class MainPageState extends State<MainPage> {
-  double _budget = 0.0;
+  late BudgetScreenState budgetScreenState;
 
   @override
   void initState() {
     super.initState();
-    _loadAsset();
-  }
-
-  Future<void> _loadAsset() async {
-    final prefs = await SharedPreferences.getInstance();
-    final assetJson = prefs.getString('asset');
-    if (assetJson != null) {
-      final assetMap = json.decode(assetJson);
-      setState(() {
-        _budget = assetMap['value'];
-      });
-    } else {
-      setState(() {
-        // Create an instance of the BudgetScreenState class
-        final budgetScreenState = BudgetScreenState();
-        _budget = budgetScreenState._asset;
-      });
-    }
-  }
-
-  Future<void> _saveBudget() async {
-    final prefs = await SharedPreferences.getInstance();
-    final assetMap = {'value': _budget};
-    final assetJson = json.encode(assetMap);
-    await prefs.setString('asset', assetJson);
-  }
-
-  @override
-  void dispose() {
-    _saveBudget();
-    super.dispose();
+    budgetScreenState = BudgetScreenState();
+    budgetScreenState.initState();
   }
 
   @override
   Widget build(BuildContext context) {
+    final double _budget = budgetScreenState._asset;
     return Scaffold(
         appBar: AppBar(
           title: const Text('홈'),
@@ -316,16 +286,6 @@ class BudgetScreenState extends State<BudgetScreen> {
           ),
         ],
       ),
-    );
-  }
-
-  void navigateToMainPage() {
-    final budgetScreenState = BudgetScreenState();
-    final budget = budgetScreenState._asset;
-    final mainPage = MainPage(budget: budget);
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => mainPage),
     );
   }
 }
