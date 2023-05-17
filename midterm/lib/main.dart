@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
-import 'dart:io';
+import 'package:provider/provider.dart';
 
 void main() => runApp(const BudgetApp());
 
@@ -45,7 +45,7 @@ class BudgetApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.green,
       ),
-      home: MainPage(),
+      home: const MainPage(),
     );
   }
 }
@@ -58,23 +58,21 @@ class MainPage extends StatefulWidget {
 }
 
 class MainPageState extends State<MainPage> {
-  late BudgetScreenState budgetScreenState;
-
   @override
   void initState() {
     super.initState();
-    budgetScreenState = BudgetScreenState();
-    budgetScreenState.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    final double _budget = budgetScreenState._asset;
+    final budgetScreenState = Provider.of<BudgetScreenState>(context);
+
     return Scaffold(
         appBar: AppBar(
           title: const Text('홈'),
         ),
-        body: Center(
+        body: SingleChildScrollView(
+            child: Center(
           child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -90,7 +88,7 @@ class MainPageState extends State<MainPage> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: Text(
-                    '\u20A9${(_budget).toStringAsFixed(2)}',
+                    '\u20A9${(budgetScreenState._asset).toStringAsFixed(2)}',
                     style: const TextStyle(
                         fontSize: 36.0, fontWeight: FontWeight.bold),
                   ),
@@ -120,12 +118,13 @@ class MainPageState extends State<MainPage> {
                   ),
                 ),
               ]),
-        ));
+        )));
   }
 }
 
 class BudgetScreen extends StatefulWidget {
-  const BudgetScreen({super.key});
+  const BudgetScreen({Key? key}) : super(key: key);
+
   @override
   BudgetScreenState createState() => BudgetScreenState();
 }
@@ -170,123 +169,124 @@ class BudgetScreenState extends State<BudgetScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('내역 조회'),
-      ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: <Widget>[
-          Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: Container(
-              child: GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const ExtraBudgetScreen(),
+        appBar: AppBar(
+          title: const Text('내역 조회'),
+        ),
+        body: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: <Widget>[
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: Container(
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ExtraBudgetScreen(),
+                        ),
+                      );
+                    },
+                    child: const Text(
+                      '자산',
+                      style: TextStyle(
+                        fontSize: 24.0,
+                        decoration: TextDecoration.none,
+                        color: Colors.black,
+                      ),
                     ),
-                  );
-                },
-                child: const Text(
-                  '자산',
-                  style: TextStyle(
-                    fontSize: 24.0,
-                    decoration: TextDecoration.none,
-                    color: Colors.black,
                   ),
                 ),
               ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Text(
-              '\u20A9${(_asset).toStringAsFixed(2)}',
-              style:
-                  const TextStyle(fontSize: 36.0, fontWeight: FontWeight.bold),
-            ),
-          ),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: Text(
-              '월 수익 대비 지출',
-              style: TextStyle(fontSize: 24.0),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: LinearProgressIndicator(
-              value: _income == 0.0 ? 0.0 : _expenses / _income,
-            ),
-          ),
-          Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  '수익',
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Text(
+                  '\u20A9${(_asset).toStringAsFixed(2)}',
+                  style: const TextStyle(
+                      fontSize: 36.0, fontWeight: FontWeight.bold),
+                ),
+              ),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: Text(
+                  '월 수익 대비 지출',
                   style: TextStyle(fontSize: 24.0),
                 ),
-                Text(
-                  '\u20A9${(_income).toStringAsFixed(2)}',
-                  style: const TextStyle(fontSize: 24.0),
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: TextField(
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                hintText: '월 수익 입력',
               ),
-              onChanged: (value) {
-                setState(() {
-                  _income = double.tryParse(value) ?? 0.0;
-                });
-              },
-            ),
-          ),
-          Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  '지출',
-                  style: TextStyle(fontSize: 24.0),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: LinearProgressIndicator(
+                  value: _income == 0.0 ? 0.0 : _expenses / _income,
                 ),
-                Text(
-                  '\u20A9${(_expenses).toStringAsFixed(2)}',
-                  style: const TextStyle(fontSize: 24.0),
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: TextField(
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                hintText: '월 지출 입력',
               ),
-              onChanged: (value) {
-                setState(() {
-                  _expenses = double.tryParse(value) ?? 0.0;
-                });
-              },
-            ),
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      '수익',
+                      style: TextStyle(fontSize: 24.0),
+                    ),
+                    Text(
+                      '\u20A9${(_income).toStringAsFixed(2)}',
+                      style: const TextStyle(fontSize: 24.0),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: TextField(
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    hintText: '월 수익 입력',
+                  ),
+                  onChanged: (value) {
+                    setState(() {
+                      _income = double.tryParse(value) ?? 0.0;
+                    });
+                  },
+                ),
+              ),
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      '지출',
+                      style: TextStyle(fontSize: 24.0),
+                    ),
+                    Text(
+                      '\u20A9${(_expenses).toStringAsFixed(2)}',
+                      style: const TextStyle(fontSize: 24.0),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: TextField(
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    hintText: '월 지출 입력',
+                  ),
+                  onChanged: (value) {
+                    setState(() {
+                      _expenses = double.tryParse(value) ?? 0.0;
+                    });
+                  },
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
-    );
+        ));
   }
 }
 
