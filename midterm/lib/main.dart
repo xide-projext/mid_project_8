@@ -319,16 +319,18 @@ class ExtraBudgetScreenState extends State {
 
   Future<void> _loadData() async {
     try {
-      final file = File('assets/data', jsonData);
-      final jsonStr = await file.readAsString();
-      final jsonData = json.decode(jsonStr);
-      setState(() {
-        _cash = jsonData['cash'] ?? 0.0;
-        _stock = jsonData['stock'] ?? 0.0;
-        _realestate = jsonData['realestate'] ?? 0.0;
-        _crypto = jsonData['crypto'] ?? 0.0;
-        _other = jsonData['other'] ?? 0.0;
-      });
+      final prefs = await SharedPreferences.getInstance();
+      final jsonData = prefs.getString('asset_data');
+      if (jsonData != null) {
+        final data = json.decode(jsonData);
+        setState(() {
+          _cash = data['cash'] ?? 0.0;
+          _stock = data['stock'] ?? 0.0;
+          _realestate = data['realestate'] ?? 0.0;
+          _crypto = data['crypto'] ?? 0.0;
+          _other = data['other'] ?? 0.0;
+        });
+      }
     } catch (e) {
       print('Failed to load data: $e');
     }
@@ -336,16 +338,15 @@ class ExtraBudgetScreenState extends State {
 
   Future<void> _saveData() async {
     try {
-      final jsonData = {
+      final prefs = await SharedPreferences.getInstance();
+      final jsonData = json.encode({
         'cash': _cash,
         'stock': _stock,
         'realestate': _realestate,
         'crypto': _crypto,
         'other': _other,
-      };
-      final jsonStr = json.encode(jsonData);
-      final file = File('assets/data', json);
-      await file.writeAsString(jsonStr);
+      });
+      await prefs.setString('asset_data', jsonData);
     } catch (e) {
       print('Failed to save data: $e');
     }
