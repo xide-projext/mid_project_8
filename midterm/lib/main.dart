@@ -1,6 +1,40 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
+import 'dart:io';
 
 void main() => runApp(const BudgetApp());
+
+class MyData {
+  String name;
+  int age;
+
+  MyData({required this.name, required this.age});
+
+  String toJson() => json.encode({'name': name, 'age': age});
+
+  factory MyData.fromJson(String str) {
+    final jsonData = json.decode(str);
+    return MyData(name: jsonData['name'], age: jsonData['age']);
+  }
+
+  static Future<MyData?> readInstance() async {
+    final prefs = await SharedPreferences.getInstance();
+    final jsonString = prefs.getString('myData');
+
+    if (jsonString == null) {
+      return null;
+    }
+
+    return MyData.fromJson(jsonString);
+  }
+
+  Future<void> saveInstance() async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setString('myData', toJson());
+  }
+}
 
 class BudgetApp extends StatelessWidget {
   const BudgetApp({super.key});
@@ -23,7 +57,43 @@ class MainPage extends StatefulWidget {
 }
 
 class MainPageState extends State<MainPage> {
-  final double _asset = 1000000.0;
+  double _budget = 0.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAsset();
+  }
+
+  Future<void> _loadAsset() async {
+    final prefs = await SharedPreferences.getInstance();
+    final assetJson = prefs.getString('asset');
+    if (assetJson != null) {
+      final assetMap = json.decode(assetJson);
+      setState(() {
+        _budget = assetMap['value'];
+      });
+    } else {
+      setState(() {
+        // Create an instance of the BudgetScreenState class
+        final budgetScreenState = BudgetScreenState();
+        _budget = budgetScreenState._asset;
+      });
+    }
+  }
+
+  Future<void> _saveBudget() async {
+    final prefs = await SharedPreferences.getInstance();
+    final assetMap = {'value': _budget};
+    final assetJson = json.encode(assetMap);
+    await prefs.setString('asset', assetJson);
+  }
+
+  @override
+  void dispose() {
+    _saveBudget();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +117,7 @@ class MainPageState extends State<MainPage> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: Text(
-                    '\u20A9${(_asset).toStringAsFixed(2)}',
+                    '\u20A9${(_budget).toStringAsFixed(2)}',
                     style: const TextStyle(
                         fontSize: 36.0, fontWeight: FontWeight.bold),
                   ),
@@ -90,7 +160,38 @@ class BudgetScreen extends StatefulWidget {
 class BudgetScreenState extends State<BudgetScreen> {
   double _income = 0.0;
   double _expenses = 0.0;
-  double _asset = 1000000.0;
+  double _asset = 0.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    final prefs = await SharedPreferences.getInstance();
+    final jsonData = prefs.getString('budget_data');
+    if (jsonData != null) {
+      final data = json.decode(jsonData);
+      setState(() {
+        _income = data['income'];
+        _expenses = data['expenses'];
+        _asset = ExtraBudgetScreenState.totalAssets + _income - _expenses;
+      });
+    }
+  }
+
+  Future<void> _saveData() async {
+    final prefs = await SharedPreferences.getInstance();
+    final jsonData = json.encode({'income': _income, 'expenses': _expenses, 'asset': _asset});
+    await prefs.setString('budget_data', jsonData);
+  }
+
+  @override
+  void dispose() {
+    _saveData();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -129,7 +230,7 @@ class BudgetScreenState extends State<BudgetScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Text(
-              '\u20A9${(_asset + _income - _expenses).toStringAsFixed(2)}',
+              '\u20A9${(_asset).toStringAsFixed(2)}',
               style:
                   const TextStyle(fontSize: 36.0, fontWeight: FontWeight.bold),
             ),
@@ -203,11 +304,58 @@ class ExtraBudgetScreen extends StatefulWidget {
 }
 
 class ExtraBudgetScreenState extends State {
-  double _cash = 0.0;
-  double _stock = 0.0;
-  double _realestate = 0.0;
-  double _crypto = 0.0;
-  double _other = 0.0;
+  static double _cash = 0.0;
+  static double _stock = 0.0;
+  static double _realestate = 0.0;
+  static double _crypto = 0.0;
+  static double _other = 0.0;
+  static double get totalAssets => _cash + _stock + _realestate + _crypto + _other;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    try {
+      final file = File('assets/data', jsonData);
+      final jsonStr = await file.readAsString();
+      final jsonData = json.decode(jsonStr);
+      setState(() {
+        _cash = jsonData['cash'] ?? 0.0;
+        _stock = jsonData['stock'] ?? 0.0;
+        _realestate = jsonData['realestate'] ?? 0.0;
+        _crypto = jsonData['crypto'] ?? 0.0;
+        _other = jsonData['other'] ?? 0.0;
+      });
+    } catch (e) {
+      print('Failed to load data: $e');
+    }
+  }
+
+  Future<void> _saveData() async {
+    try {
+      final jsonData = {
+        'cash': _cash,
+        'stock': _stock,
+        'realestate': _realestate,
+        'crypto': _crypto,
+        'other': _other,
+      };
+      final jsonStr = json.encode(jsonData);
+      final file = File('assets/data', json);
+      await file.writeAsString(jsonStr);
+    } catch (e) {
+      print('Failed to save data: $e');
+    }
+  }
+
+  @override
+  void dispose() {
+    _saveData();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -218,11 +366,20 @@ class ExtraBudgetScreenState extends State {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: Text(
-              '현금',
-              style: TextStyle(fontSize: 24.0),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  '현금',
+                  style: TextStyle(fontSize: 24.0),
+                ),
+                Text(
+                  '\u20A9${(_cash).toStringAsFixed(2)}',
+                  style: const TextStyle(fontSize: 24.0),
+                ),
+              ],
             ),
           ),
           Padding(
@@ -234,16 +391,25 @@ class ExtraBudgetScreenState extends State {
               ),
               onChanged: (value) {
                 setState(() {
-                  _cash = double.tryParse(value) ?? 0.0;
+                  _cash += double.tryParse(value) ?? 0.0;
                 });
               },
             ),
           ),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: Text(
-              '주식',
-              style: TextStyle(fontSize: 24.0),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  '주식',
+                  style: TextStyle(fontSize: 24.0),
+                ),
+                Text(
+                  '\u20A9${(_stock).toStringAsFixed(2)}',
+                  style: const TextStyle(fontSize: 24.0),
+                ),
+              ],
             ),
           ),
           Padding(
@@ -255,16 +421,25 @@ class ExtraBudgetScreenState extends State {
               ),
               onChanged: (value) {
                 setState(() {
-                  _stock = double.tryParse(value) ?? 0.0;
+                  _stock += double.tryParse(value) ?? 0.0;
                 });
               },
             ),
           ),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: Text(
-              '부동산',
-              style: TextStyle(fontSize: 24.0),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  '부동산',
+                  style: TextStyle(fontSize: 24.0),
+                ),
+                Text(
+                  '\u20A9${(_realestate).toStringAsFixed(2)}',
+                  style: const TextStyle(fontSize: 24.0),
+                ),
+              ],
             ),
           ),
           Padding(
@@ -276,16 +451,25 @@ class ExtraBudgetScreenState extends State {
               ),
               onChanged: (value) {
                 setState(() {
-                  _realestate = double.tryParse(value) ?? 0.0;
+                  _realestate += double.tryParse(value) ?? 0.0;
                 });
               },
             ),
           ),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: Text(
-              '가상화폐',
-              style: TextStyle(fontSize: 24.0),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  '가상 화폐',
+                  style: TextStyle(fontSize: 24.0),
+                ),
+                Text(
+                  '\u20A9${(_crypto).toStringAsFixed(2)}',
+                  style: const TextStyle(fontSize: 24.0),
+                ),
+              ],
             ),
           ),
           Padding(
@@ -297,16 +481,25 @@ class ExtraBudgetScreenState extends State {
               ),
               onChanged: (value) {
                 setState(() {
-                  _crypto = double.tryParse(value) ?? 0.0;
+                  _crypto += double.tryParse(value) ?? 0.0;
                 });
               },
             ),
           ),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: Text(
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
               '이외 자산',
               style: TextStyle(fontSize: 24.0),
+                ),
+                Text(
+                  '\u20A9${(_other).toStringAsFixed(2)}',
+                  style: const TextStyle(fontSize: 24.0),
+                ),
+              ],
             ),
           ),
           Padding(
@@ -318,7 +511,7 @@ class ExtraBudgetScreenState extends State {
               ),
               onChanged: (value) {
                 setState(() {
-                  _other = double.tryParse(value) ?? 0.0;
+                  _other += double.tryParse(value) ?? 0.0;
                 });
               },
             ),
@@ -333,7 +526,7 @@ class ExtraBudgetScreenState extends State {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Text(
-              '\u20A9${(_cash + _stock + _realestate + _crypto + _other).toStringAsFixed(2)}',
+              '\u20A9${(totalAssets).toStringAsFixed(2)}',
               style:
                   const TextStyle(fontSize: 36.0, fontWeight: FontWeight.bold),
             ),
