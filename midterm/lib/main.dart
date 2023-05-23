@@ -4,16 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'package:provider/provider.dart';
 
-void main() => runApp(
-      MultiProvider(
-        providers: [
-          ChangeNotifierProvider<BudgetScreenState>(
-            create: (context) => BudgetScreenState(),
-          ),
-        ],
-        child: BudgetApp(),
-      ),
-    );
+void main() => runApp(const BudgetApp());
 
 class BudgetApp extends StatelessWidget {
   const BudgetApp({Key? key}) : super(key: key);
@@ -270,7 +261,7 @@ class BudgetScreenState extends State<BudgetScreen> {
 }
 
 class ExtraBudgetScreen extends StatefulWidget {
-  const ExtraBudgetScreen({super.key});
+  const ExtraBudgetScreen({Key? key}) : super(key: key);
 
   @override
   ExtraBudgetScreenState createState() => ExtraBudgetScreenState();
