@@ -4,37 +4,16 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'package:provider/provider.dart';
 
-void main() => runApp(const BudgetApp());
-
-class MyData {
-  String name;
-  int age;
-
-  MyData({required this.name, required this.age});
-
-  String toJson() => json.encode({'name': name, 'age': age});
-
-  factory MyData.fromJson(String str) {
-    final jsonData = json.decode(str);
-    return MyData(name: jsonData['name'], age: jsonData['age']);
-  }
-
-  static Future<MyData?> readInstance() async {
-    final prefs = await SharedPreferences.getInstance();
-    final jsonString = prefs.getString('myData');
-
-    if (jsonString == null) {
-      return null;
-    }
-
-    return MyData.fromJson(jsonString);
-  }
-
-  Future<void> saveInstance() async {
-    final prefs = await SharedPreferences.getInstance();
-    prefs.setString('myData', toJson());
-  }
-}
+void main() => runApp(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider<BudgetScreenState>(
+            create: (context) => BudgetScreenState(),
+          ),
+        ],
+        child: BudgetApp(),
+      ),
+    );
 
 class BudgetApp extends StatelessWidget {
   const BudgetApp({Key? key}) : super(key: key);
@@ -297,7 +276,7 @@ class ExtraBudgetScreen extends StatefulWidget {
   ExtraBudgetScreenState createState() => ExtraBudgetScreenState();
 }
 
-class ExtraBudgetScreenState extends State {
+class ExtraBudgetScreenState extends State<ExtraBudgetScreen> {
   static double _cash = 0.0;
   static double _stock = 0.0;
   static double _realestate = 0.0;
