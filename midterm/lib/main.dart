@@ -2,18 +2,18 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
-import 'package:provider/provider.dart';
 
 void main() => runApp(const BudgetApp());
 
 class BudgetApp extends StatelessWidget {
   const BudgetApp({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Budget App',
       theme: ThemeData(
-        primarySwatch: Colors.green,
+        primarySwatch: Colors.blue,
       ),
       home: const MainPage(),
     );
@@ -28,6 +28,8 @@ class MainPage extends StatefulWidget {
 }
 
 class MainPageState extends State<MainPage> {
+  double _showtotal = 0.0;
+
   @override
   void initState() {
     super.initState();
@@ -35,8 +37,6 @@ class MainPageState extends State<MainPage> {
 
   @override
   Widget build(BuildContext context) {
-    final budgetScreenState = Provider.of<BudgetScreenState>(context);
-
     return Scaffold(
         appBar: AppBar(
           title: const Text('홈'),
@@ -58,7 +58,7 @@ class MainPageState extends State<MainPage> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: Text(
-                    '\u20A9${(budgetScreenState._asset).toStringAsFixed(2)}',
+                    '\u20A9${(_showtotal).toStringAsFixed(2)}',
                     style: const TextStyle(
                         fontSize: 36.0, fontWeight: FontWeight.bold),
                   ),
@@ -188,8 +188,18 @@ class BudgetScreenState extends State<BudgetScreen> {
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: LinearProgressIndicator(
-                  value: _income == 0.0 ? 0.0 : _expenses / _income,
+                child: TweenAnimationBuilder<double>(
+                  tween: Tween<double>(
+                      begin: 0.0,
+                      end: _income == 0.0 ? 0.0 : _expenses / _income),
+                  duration: const Duration(milliseconds: 500),
+                  builder: (context, value, child) {
+                    return LinearProgressIndicator(
+                      value: value,
+                      backgroundColor: Colors.grey,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+                    );
+                  },
                 ),
               ),
               Padding(
@@ -358,7 +368,7 @@ class ExtraBudgetScreenState extends State<ExtraBudgetScreen> {
               ),
               onChanged: (value) {
                 setState(() {
-                  _cash += double.tryParse(value) ?? 0.0;
+                  _cash = double.tryParse(value) ?? 0.0;
                 });
               },
             ),
@@ -389,7 +399,7 @@ class ExtraBudgetScreenState extends State<ExtraBudgetScreen> {
               ),
               onChanged: (value) {
                 setState(() {
-                  _stock += double.tryParse(value) ?? 0.0;
+                  _stock = double.tryParse(value) ?? 0.0;
                 });
               },
             ),
@@ -420,7 +430,7 @@ class ExtraBudgetScreenState extends State<ExtraBudgetScreen> {
               ),
               onChanged: (value) {
                 setState(() {
-                  _realestate += double.tryParse(value) ?? 0.0;
+                  _realestate = double.tryParse(value) ?? 0.0;
                 });
               },
             ),
@@ -451,7 +461,7 @@ class ExtraBudgetScreenState extends State<ExtraBudgetScreen> {
               ),
               onChanged: (value) {
                 setState(() {
-                  _crypto += double.tryParse(value) ?? 0.0;
+                  _crypto = double.tryParse(value) ?? 0.0;
                 });
               },
             ),
@@ -482,7 +492,7 @@ class ExtraBudgetScreenState extends State<ExtraBudgetScreen> {
               ),
               onChanged: (value) {
                 setState(() {
-                  _other += double.tryParse(value) ?? 0.0;
+                  _other = double.tryParse(value) ?? 0.0;
                 });
               },
             ),
@@ -502,6 +512,12 @@ class ExtraBudgetScreenState extends State<ExtraBudgetScreen> {
                   const TextStyle(fontSize: 36.0, fontWeight: FontWeight.bold),
             ),
           ),
+          Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: ElevatedButton(
+                onPressed: _saveData,
+                child: const Text('저장'),
+              )),
         ],
       ),
     );
