@@ -28,7 +28,7 @@ class MainPage extends StatefulWidget {
 }
 
 class MainPageState extends State<MainPage> {
-  double _showtotal = 0.0;
+  final double _showtotal = 0.0;
 
   @override
   void initState() {
@@ -197,7 +197,7 @@ class BudgetScreenState extends State<BudgetScreen> {
                     return LinearProgressIndicator(
                       value: value,
                       backgroundColor: Colors.grey,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+                      valueColor: const AlwaysStoppedAnimation<Color>(Colors.blue),
                     );
                   },
                 ),
