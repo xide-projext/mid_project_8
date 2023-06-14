@@ -287,6 +287,14 @@ class ExtraBudgetScreenState extends State<ExtraBudgetScreen> {
   static double get totalAssets =>
       _cash + _stock + _realestate + _crypto + _other;
 
+  Map<String, double> _tempData = {
+    'cash': 0.0,
+    'stock': 0.0,
+    'realestate': 0.0,
+    'crypto': 0.0,
+    'other': 0.0,
+  };
+
   @override
   void initState() {
     super.initState();
@@ -315,23 +323,11 @@ class ExtraBudgetScreenState extends State<ExtraBudgetScreen> {
   Future<void> _saveData() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final jsonData = json.encode({
-        'cash': _cash,
-        'stock': _stock,
-        'realestate': _realestate,
-        'crypto': _crypto,
-        'other': _other,
-      });
+      final jsonData = json.encode(_tempData);
       await prefs.setString('asset_data', jsonData);
     } catch (e) {
       print('Failed to save data: $e');
     }
-  }
-
-  @override
-  void dispose() {
-    _saveData();
-    super.dispose();
   }
 
   @override
@@ -516,7 +512,16 @@ class ExtraBudgetScreenState extends State<ExtraBudgetScreen> {
           Padding(
               padding: const EdgeInsets.all(16.0),
               child: ElevatedButton(
-                onPressed: _saveData,
+                onPressed: () {
+                  _tempData = {
+                    'cash': _cash,
+                    'stock': _stock,
+                    'realestate': _realestate,
+                    'crypto': _crypto,
+                    'other': _other,
+                  };
+                  _saveData();
+                },
                 child: const Text('저장'),
               )),
         ],
