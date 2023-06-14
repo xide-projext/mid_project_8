@@ -197,7 +197,8 @@ class BudgetScreenState extends State<BudgetScreen> {
                     return LinearProgressIndicator(
                       value: value,
                       backgroundColor: Colors.grey,
-                      valueColor: const AlwaysStoppedAnimation<Color>(Colors.blue),
+                      valueColor:
+                          const AlwaysStoppedAnimation<Color>(Colors.blue),
                     );
                   },
                 ),
