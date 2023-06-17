@@ -1,8 +1,8 @@
-// git clone HC
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import 'package:table_calendar/table_calendar.dart';
 
 void main() => runApp(const BudgetApp());
 
@@ -39,57 +39,70 @@ class MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: const Text('홈'),
-        ),
-        body: SingleChildScrollView(
-            child: Center(
-          child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                const Padding(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                  child: Text(
-                    '현재 자산',
-                    style: TextStyle(fontSize: 24.0),
+      appBar: AppBar(
+        title: const Text('홈'),
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          children: <Widget>[
+            TableCalendar(
+              focusedDay: DateTime.now(),
+              firstDay: DateTime(DateTime.now().year - 1),
+              lastDay: DateTime(DateTime.now().year + 1),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: <Widget>[
+                  const Padding(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                    child: Text(
+                      '현재 자산',
+                      style: TextStyle(fontSize: 24.0),
+                    ),
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Text(
-                    '\u20A9${(_showtotal).toStringAsFixed(2)}',
-                    style: const TextStyle(
-                        fontSize: 36.0, fontWeight: FontWeight.bold),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Text(
+                      '\u20A9${(_showtotal).toStringAsFixed(2)}',
+                      style: const TextStyle(
+                          fontSize: 36.0, fontWeight: FontWeight.bold),
+                    ),
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16.0, vertical: 8.0),
-                  child: Container(
-                    child: GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const BudgetScreen(),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16.0, vertical: 8.0),
+                    child: Container(
+                      child: GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const BudgetScreen(),
+                            ),
+                          );
+                        },
+                        child: const Text(
+                          '내역 조회',
+                          style: TextStyle(
+                            fontSize: 24.0,
+                            decoration: TextDecoration.none,
+                            color: Colors.black,
                           ),
-                        );
-                      },
-                      child: const Text(
-                        '내역 조회',
-                        style: TextStyle(
-                          fontSize: 24.0,
-                          decoration: TextDecoration.none,
-                          color: Colors.black,
                         ),
                       ),
                     ),
                   ),
-                ),
-              ]),
-        )));
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 
@@ -101,9 +114,14 @@ class BudgetScreen extends StatefulWidget {
 }
 
 class BudgetScreenState extends State<BudgetScreen> {
-  double _income = 0.0;
-  double _expenses = 0.0;
-  double _asset = 0.0;
+  static double _income = 0.0;
+  static double _expenses = 0.0;
+  static double _asset = 0.0;
+
+  final Map<String, double> _tempData = {
+    'income': 0.0,
+    'expenses': 0.0,
+  };
 
   @override
   void initState() {
@@ -112,23 +130,42 @@ class BudgetScreenState extends State<BudgetScreen> {
   }
 
   Future<void> _loadData() async {
-    final prefs = await SharedPreferences.getInstance();
-    final jsonData = prefs.getString('budget_data');
-    if (jsonData != null) {
-      final data = json.decode(jsonData);
-      setState(() {
-        _income = data['income'];
-        _expenses = data['expenses'];
-        _asset = ExtraBudgetScreenState.totalAssets + _income - _expenses;
-      });
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final jsonData = prefs.getString('budget_data');
+      if (jsonData != null) {
+        final data = json.decode(jsonData);
+        setState(() {
+          _tempData['income'] = data['income'] ?? 0.0;
+          _tempData['expenses'] = data['expenses'] ?? 0.0;
+          _asset = ExtraBudgetScreenState.totalAssets +
+              _tempData['income']! -
+              _tempData['expenses']!;
+        });
+      }
+    } catch (e) {
+      print('Failed to load data: $e');
     }
   }
 
   Future<void> _saveData() async {
-    final prefs = await SharedPreferences.getInstance();
-    final jsonData = json
-        .encode({'income': _income, 'expenses': _expenses, 'asset': _asset});
-    await prefs.setString('budget_data', jsonData);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final jsonData = json.encode({
+        'income': _tempData['income'],
+        'expenses': _tempData['expenses'],
+        'asset': _asset,
+      });
+      await prefs.setString('budget_data', jsonData);
+
+      setState(() {
+        _income = _tempData['income']!;
+        _expenses = _tempData['expenses']!;
+        _asset = _asset;
+      });
+    } catch (e) {
+      print('Failed to save data: $e');
+    }
   }
 
   @override
@@ -230,7 +267,7 @@ class BudgetScreenState extends State<BudgetScreen> {
                   ),
                   onChanged: (value) {
                     setState(() {
-                      _income = double.tryParse(value) ?? 0.0;
+                      _tempData['income'] = double.tryParse(value) ?? 0.0;
                     });
                   },
                 ),
@@ -261,9 +298,23 @@ class BudgetScreenState extends State<BudgetScreen> {
                   ),
                   onChanged: (value) {
                     setState(() {
-                      _expenses = double.tryParse(value) ?? 0.0;
+                      _tempData['expenses'] = double.tryParse(value) ?? 0.0;
                     });
                   },
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      _income = _tempData['income'] as double;
+                      _expenses = _tempData['expenses'] as double;
+                      _asset = _tempData['asset'] as double;
+                    });
+                    _saveData();
+                  },
+                  child: const Text('저장'),
                 ),
               ),
             ],
@@ -288,7 +339,7 @@ class ExtraBudgetScreenState extends State<ExtraBudgetScreen> {
   static double get totalAssets =>
       _cash + _stock + _realestate + _crypto + _other;
 
-  Map<String, double> _tempData = {
+  final Map<String, double> _tempData = {
     'cash': 0.0,
     'stock': 0.0,
     'realestate': 0.0,
@@ -309,11 +360,11 @@ class ExtraBudgetScreenState extends State<ExtraBudgetScreen> {
       if (jsonData != null) {
         final data = json.decode(jsonData);
         setState(() {
-          _cash = data['cash'] ?? 0.0;
-          _stock = data['stock'] ?? 0.0;
-          _realestate = data['realestate'] ?? 0.0;
-          _crypto = data['crypto'] ?? 0.0;
-          _other = data['other'] ?? 0.0;
+          _tempData['cash'] = data['cash'] ?? 0.0;
+          _tempData['stock'] = data['stock'] ?? 0.0;
+          _tempData['realestate'] = data['realestate'] ?? 0.0;
+          _tempData['crypto'] = data['crypto'] ?? 0.0;
+          _tempData['other'] = data['other'] ?? 0.0;
         });
       }
     } catch (e) {
@@ -324,7 +375,13 @@ class ExtraBudgetScreenState extends State<ExtraBudgetScreen> {
   Future<void> _saveData() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final jsonData = json.encode(_tempData);
+      final jsonData = json.encode({
+        'cash': _tempData['cash'],
+        'stock': _tempData['stock'],
+        'realestate': _tempData['realestate'],
+        'crypto': _tempData['crypto'],
+        'other': _tempData['other'],
+      });
       await prefs.setString('asset_data', jsonData);
     } catch (e) {
       print('Failed to save data: $e');
@@ -366,7 +423,7 @@ class ExtraBudgetScreenState extends State<ExtraBudgetScreen> {
               ),
               onChanged: (value) {
                 setState(() {
-                  _cash = double.tryParse(value) ?? 0.0;
+                  _tempData['cash'] = double.tryParse(value) ?? 0.0;
                 });
               },
             ),
@@ -397,7 +454,7 @@ class ExtraBudgetScreenState extends State<ExtraBudgetScreen> {
               ),
               onChanged: (value) {
                 setState(() {
-                  _stock = double.tryParse(value) ?? 0.0;
+                  _tempData['stock'] = double.tryParse(value) ?? 0.0;
                 });
               },
             ),
@@ -428,7 +485,7 @@ class ExtraBudgetScreenState extends State<ExtraBudgetScreen> {
               ),
               onChanged: (value) {
                 setState(() {
-                  _realestate = double.tryParse(value) ?? 0.0;
+                  _tempData['realestate'] = double.tryParse(value) ?? 0.0;
                 });
               },
             ),
@@ -459,7 +516,7 @@ class ExtraBudgetScreenState extends State<ExtraBudgetScreen> {
               ),
               onChanged: (value) {
                 setState(() {
-                  _crypto = double.tryParse(value) ?? 0.0;
+                  _tempData['crypto'] = double.tryParse(value) ?? 0.0;
                 });
               },
             ),
@@ -490,7 +547,7 @@ class ExtraBudgetScreenState extends State<ExtraBudgetScreen> {
               ),
               onChanged: (value) {
                 setState(() {
-                  _other = double.tryParse(value) ?? 0.0;
+                  _tempData['other'] = double.tryParse(value) ?? 0.0;
                 });
               },
             ),
@@ -511,20 +568,21 @@ class ExtraBudgetScreenState extends State<ExtraBudgetScreen> {
             ),
           ),
           Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: ElevatedButton(
-                onPressed: () {
-                  _tempData = {
-                    'cash': _cash,
-                    'stock': _stock,
-                    'realestate': _realestate,
-                    'crypto': _crypto,
-                    'other': _other,
-                  };
-                  _saveData();
-                },
-                child: const Text('저장'),
-              )),
+            padding: const EdgeInsets.all(16.0),
+            child: ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  _cash = _tempData['cash'] as double;
+                  _stock = _tempData['stock'] as double;
+                  _realestate = _tempData['realestate'] as double;
+                  _crypto = _tempData['crypto'] as double;
+                  _other = _tempData['other'] as double;
+                });
+                _saveData();
+              },
+              child: const Text('저장'),
+            ),
+          ),
         ],
       ),
     );
