@@ -69,10 +69,27 @@ class MainPageState extends State<MainPage> {
   }
 }
 
-class MainPageContent extends StatelessWidget {
+class MainPageContent extends StatefulWidget {
   final double showTotal;
 
   const MainPageContent({Key? key, required this.showTotal}) : super(key: key);
+
+  @override
+  _MainPageContentState createState() => _MainPageContentState();
+}
+
+class _MainPageContentState extends State<MainPageContent> {
+  DateTime _selectedDay = DateTime.now();
+
+  void _onDaySelected(DateTime selectedDay, DateTime focusedDay) {
+    setState(() {
+      _selectedDay = selectedDay;
+    });
+
+    // Perform any additional actions based on the selected day
+    // Here you can update the UI or navigate to a specific screen
+    print("Selected day: $_selectedDay");
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -83,6 +100,8 @@ class MainPageContent extends StatelessWidget {
             focusedDay: DateTime.now(),
             firstDay: DateTime(DateTime.now().year - 1),
             lastDay: DateTime(DateTime.now().year + 1),
+            selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
+            onDaySelected: _onDaySelected,
           ),
           Padding(
             padding: const EdgeInsets.all(16.0),
@@ -100,7 +119,7 @@ class MainPageContent extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: Text(
-                    '\u20A9${(showTotal).toStringAsFixed(2)}',
+                    '\u20A9${(widget.showTotal).toStringAsFixed(2)}',
                     style: const TextStyle(fontSize: 36.0, fontWeight: FontWeight.bold),
                   ),
                 ),
