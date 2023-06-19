@@ -34,13 +34,37 @@ class MainPage extends StatefulWidget {
 class MainPageState extends State<MainPage> {
   final double _showtotal = 0.0;
 
+  int _currentIndex = 0;
+  final List<Widget> _screens = [
+    MainPageContent(showTotal: 0.0),
+    StockPageContent(),
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('홈'),
+        title: _currentIndex == 0 ? const Text('홈') : const Text('투자'),
       ),
-      body: MainPageContent(showTotal: _showtotal),
+      body: _screens[_currentIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentIndex,
+        onTap: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
+        },
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: '홈',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.attach_money),
+            label: '주식',
+          ),
+        ],
+      ),
     );
   }
 }
@@ -109,6 +133,7 @@ class MainPageContent extends StatelessWidget {
     );
   }
 }
+
 class BudgetScreen extends StatefulWidget {
   const BudgetScreen({Key? key}) : super(key: key);
 
