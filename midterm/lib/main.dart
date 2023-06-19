@@ -17,6 +17,9 @@ class BudgetApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       home: const MainPage(),
+      routes: {
+        '/stock': (context) => const StockPage(),
+      },
     );
   }
 }
@@ -32,80 +35,80 @@ class MainPageState extends State<MainPage> {
   final double _showtotal = 0.0;
 
   @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('홈'),
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: <Widget>[
-            TableCalendar(
-              focusedDay: DateTime.now(),
-              firstDay: DateTime(DateTime.now().year - 1),
-              lastDay: DateTime(DateTime.now().year + 1),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: <Widget>[
-                  const Padding(
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                    child: Text(
-                      '현재 자산',
-                      style: TextStyle(fontSize: 24.0),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: Text(
-                      '\u20A9${(_showtotal).toStringAsFixed(2)}',
-                      style: const TextStyle(
-                          fontSize: 36.0, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16.0, vertical: 8.0),
-                    child: Container(
-                      child: GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const BudgetScreen(),
-                            ),
-                          );
-                        },
-                        child: const Text(
-                          '내역 조회',
-                          style: TextStyle(
-                            fontSize: 24.0,
-                            decoration: TextDecoration.none,
-                            color: Colors.black,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
+      body: MainPageContent(showTotal: _showtotal),
     );
   }
 }
 
+class MainPageContent extends StatelessWidget {
+  final double showTotal;
+
+  const MainPageContent({Key? key, required this.showTotal}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      child: Column(
+        children: <Widget>[
+          TableCalendar(
+            focusedDay: DateTime.now(),
+            firstDay: DateTime(DateTime.now().year - 1),
+            lastDay: DateTime(DateTime.now().year + 1),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  child: Text(
+                    '현재 자산',
+                    style: TextStyle(fontSize: 24.0),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Text(
+                    '\u20A9${(showTotal).toStringAsFixed(2)}',
+                    style: const TextStyle(fontSize: 36.0, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  child: Container(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const BudgetScreen()),
+                        );
+                      },
+                      child: const Text(
+                        '내역 조회',
+                        style: TextStyle(
+                          fontSize: 24.0,
+                          decoration: TextDecoration.none,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
 class BudgetScreen extends StatefulWidget {
   const BudgetScreen({Key? key}) : super(key: key);
 
@@ -585,6 +588,33 @@ class ExtraBudgetScreenState extends State<ExtraBudgetScreen> {
           ),
         ],
       ),
+    );
+  }
+}
+class StockPageContent extends StatelessWidget {
+  const StockPageContent({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return const Center(
+      child: Text(
+        'Stock Page',
+        style: TextStyle(fontSize: 24.0),
+      ),
+    );
+  }
+}
+
+class StockPage extends StatelessWidget {
+  const StockPage({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('투자'),
+      ),
+      body: StockPageContent(),
     );
   }
 }
