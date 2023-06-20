@@ -22,7 +22,7 @@ class BudgetApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const MainPage(),
+      home: MainPage(),
       routes: {
         '/stock': (context) => const StockPage(),
       },
@@ -31,20 +31,39 @@ class BudgetApp extends StatelessWidget {
 }
 
 class MainPage extends StatefulWidget {
-  const MainPage({Key? key}) : super(key: key);
+  final String? myParameter;
+
+  MainPage({Key? key, this.myParameter}) : super(key: UniqueKey());
 
   @override
   MainPageState createState() => MainPageState();
 }
 
 class MainPageState extends State<MainPage> {
-  final double _showtotal = 0.0;
-
   int _currentIndex = 0;
-  final List<Widget> _screens = [
-    const MainPageContent(showTotal: 0.0),
-    const StockPageContent(),
-  ];
+  late final List<Widget> _screens;
+
+  @override
+  void initState() {
+    super.initState();
+    _screens = [
+      MainPageContent(),
+      const StockPageContent(),
+    ];
+    _loadAsset();
+  }
+
+  Future<void> _loadAsset() async {
+    final prefs = await SharedPreferences.getInstance();
+    final jsonData = prefs.getString('budget_data');
+    if (jsonData != null) {
+      final data = json.decode(jsonData);
+      setState(() {
+        // Update the asset value
+        BudgetScreenState._asset = data['asset'] ?? 0.0;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -76,15 +95,30 @@ class MainPageState extends State<MainPage> {
 }
 
 class MainPageContent extends StatefulWidget {
-  final double showTotal;
-
-  const MainPageContent({Key? key, required this.showTotal}) : super(key: key);
-
   @override
   _MainPageContentState createState() => _MainPageContentState();
 }
 
 class _MainPageContentState extends State<MainPageContent> {
+  double _showtotal = BudgetScreenState._asset;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAsset();
+  }
+
+  Future<void> _loadAsset() async {
+    final prefs = await SharedPreferences.getInstance();
+    final jsonData = prefs.getString('budget_data');
+    if (jsonData != null) {
+      final data = json.decode(jsonData);
+      setState(() {
+        _showtotal = data['asset'] ?? 0.0;
+      });
+    }
+  }
+
   DateTime _selectedDay = DateTime.now();
 
   void _onDaySelected(DateTime selectedDay, DateTime focusedDay) {
@@ -116,7 +150,8 @@ class _MainPageContentState extends State<MainPageContent> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
                 const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                   child: Text(
                     '현재 자산',
                     style: TextStyle(fontSize: 24.0),
@@ -125,18 +160,21 @@ class _MainPageContentState extends State<MainPageContent> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: Text(
-                    '\u20A9${(widget.showTotal).toStringAsFixed(2)}',
-                    style: const TextStyle(fontSize: 36.0, fontWeight: FontWeight.bold),
+                    '\u20A9${(_showtotal).toStringAsFixed(2)}',
+                    style: const TextStyle(
+                        fontSize: 36.0, fontWeight: FontWeight.bold),
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0, vertical: 8.0),
                   child: Container(
                     child: ElevatedButton(
                       onPressed: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => const BudgetScreen()),
+                          MaterialPageRoute(
+                              builder: (context) => const BudgetScreen()),
                         );
                       },
                       child: const Text(
@@ -144,7 +182,7 @@ class _MainPageContentState extends State<MainPageContent> {
                         style: TextStyle(
                           fontSize: 24.0,
                           decoration: TextDecoration.none,
-                          color: Colors.black,
+                          color: Colors.white,
                         ),
                       ),
                     ),
@@ -188,13 +226,18 @@ class BudgetScreenState extends State<BudgetScreen> {
       final jsonData = prefs.getString('budget_data');
       if (jsonData != null) {
         final data = json.decode(jsonData);
-        setState(() {
-          _tempData['income'] = data['income'] ?? 0.0;
-          _tempData['expenses'] = data['expenses'] ?? 0.0;
-          _asset = ExtraBudgetScreenState.totalAssets +
-              _tempData['income']! -
-              _tempData['expenses']!;
-        });
+        final double income = data['income'] ?? 0.0;
+        final double expenses = data['expenses'] ?? 0.0;
+        final double newAsset =
+            ExtraBudgetScreenState.totalAssets + income - expenses;
+
+        if (_asset != newAsset) {
+          setState(() {
+            _tempData['income'] = income;
+            _tempData['expenses'] = expenses;
+            _asset = newAsset;
+          });
+        }
       }
     } catch (e) {
       print('Failed to load data: $e');
@@ -242,8 +285,8 @@ class BudgetScreenState extends State<BudgetScreen> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                 child: Container(
-                  child: GestureDetector(
-                    onTap: () {
+                  child: ElevatedButton(
+                    onPressed: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -256,7 +299,7 @@ class BudgetScreenState extends State<BudgetScreen> {
                       style: TextStyle(
                         fontSize: 24.0,
                         decoration: TextDecoration.none,
-                        color: Colors.black,
+                        color: Colors.white,
                       ),
                     ),
                   ),
@@ -444,207 +487,207 @@ class ExtraBudgetScreenState extends State<ExtraBudgetScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('자산 상세 정보'),
-      ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  '현금',
+        appBar: AppBar(
+          title: const Text('자산 상세 정보'),
+        ),
+        body: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      '현금',
+                      style: TextStyle(fontSize: 24.0),
+                    ),
+                    Text(
+                      '\u20A9${(_cash).toStringAsFixed(2)}',
+                      style: const TextStyle(fontSize: 24.0),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: TextField(
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    hintText: '보유 현금 금액 입력',
+                  ),
+                  onChanged: (value) {
+                    setState(() {
+                      _tempData['cash'] = double.tryParse(value) ?? 0.0;
+                    });
+                  },
+                ),
+              ),
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      '주식',
+                      style: TextStyle(fontSize: 24.0),
+                    ),
+                    Text(
+                      '\u20A9${(_stock).toStringAsFixed(2)}',
+                      style: const TextStyle(fontSize: 24.0),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: TextField(
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    hintText: '보유 주식 금액 입력',
+                  ),
+                  onChanged: (value) {
+                    setState(() {
+                      _tempData['stock'] = double.tryParse(value) ?? 0.0;
+                    });
+                  },
+                ),
+              ),
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      '부동산',
+                      style: TextStyle(fontSize: 24.0),
+                    ),
+                    Text(
+                      '\u20A9${(_realestate).toStringAsFixed(2)}',
+                      style: const TextStyle(fontSize: 24.0),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: TextField(
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    hintText: '보유 부둥산 금액 입력',
+                  ),
+                  onChanged: (value) {
+                    setState(() {
+                      _tempData['realestate'] = double.tryParse(value) ?? 0.0;
+                    });
+                  },
+                ),
+              ),
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      '가상 화폐',
+                      style: TextStyle(fontSize: 24.0),
+                    ),
+                    Text(
+                      '\u20A9${(_crypto).toStringAsFixed(2)}',
+                      style: const TextStyle(fontSize: 24.0),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: TextField(
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    hintText: '보유 가상화폐 금액 입력',
+                  ),
+                  onChanged: (value) {
+                    setState(() {
+                      _tempData['crypto'] = double.tryParse(value) ?? 0.0;
+                    });
+                  },
+                ),
+              ),
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      '이외 자산',
+                      style: TextStyle(fontSize: 24.0),
+                    ),
+                    Text(
+                      '\u20A9${(_other).toStringAsFixed(2)}',
+                      style: const TextStyle(fontSize: 24.0),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: TextField(
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    hintText: '보유 이외 자산 금액 입력',
+                  ),
+                  onChanged: (value) {
+                    setState(() {
+                      _tempData['other'] = double.tryParse(value) ?? 0.0;
+                    });
+                  },
+                ),
+              ),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: Text(
+                  '총 자산',
                   style: TextStyle(fontSize: 24.0),
                 ),
-                Text(
-                  '\u20A9${(_cash).toStringAsFixed(2)}',
-                  style: const TextStyle(fontSize: 24.0),
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: TextField(
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                hintText: '보유 현금 금액 입력',
               ),
-              onChanged: (value) {
-                setState(() {
-                  _tempData['cash'] = double.tryParse(value) ?? 0.0;
-                });
-              },
-            ),
-          ),
-          Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  '주식',
-                  style: TextStyle(fontSize: 24.0),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Text(
+                  '\u20A9${(totalAssets).toStringAsFixed(2)}',
+                  style: const TextStyle(
+                      fontSize: 36.0, fontWeight: FontWeight.bold),
                 ),
-                Text(
-                  '\u20A9${(_stock).toStringAsFixed(2)}',
-                  style: const TextStyle(fontSize: 24.0),
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: TextField(
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                hintText: '보유 주식 금액 입력',
               ),
-              onChanged: (value) {
-                setState(() {
-                  _tempData['stock'] = double.tryParse(value) ?? 0.0;
-                });
-              },
-            ),
-          ),
-          Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  '부동산',
-                  style: TextStyle(fontSize: 24.0),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      _cash = _tempData['cash'] as double;
+                      _stock = _tempData['stock'] as double;
+                      _realestate = _tempData['realestate'] as double;
+                      _crypto = _tempData['crypto'] as double;
+                      _other = _tempData['other'] as double;
+                    });
+                    _saveData();
+                  },
+                  child: const Text('저장'),
                 ),
-                Text(
-                  '\u20A9${(_realestate).toStringAsFixed(2)}',
-                  style: const TextStyle(fontSize: 24.0),
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: TextField(
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                hintText: '보유 부둥산 금액 입력',
               ),
-              onChanged: (value) {
-                setState(() {
-                  _tempData['realestate'] = double.tryParse(value) ?? 0.0;
-                });
-              },
-            ),
+            ],
           ),
-          Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  '가상 화폐',
-                  style: TextStyle(fontSize: 24.0),
-                ),
-                Text(
-                  '\u20A9${(_crypto).toStringAsFixed(2)}',
-                  style: const TextStyle(fontSize: 24.0),
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: TextField(
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                hintText: '보유 가상화폐 금액 입력',
-              ),
-              onChanged: (value) {
-                setState(() {
-                  _tempData['crypto'] = double.tryParse(value) ?? 0.0;
-                });
-              },
-            ),
-          ),
-          Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  '이외 자산',
-                  style: TextStyle(fontSize: 24.0),
-                ),
-                Text(
-                  '\u20A9${(_other).toStringAsFixed(2)}',
-                  style: const TextStyle(fontSize: 24.0),
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: TextField(
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                hintText: '보유 이외 자산 금액 입력',
-              ),
-              onChanged: (value) {
-                setState(() {
-                  _tempData['other'] = double.tryParse(value) ?? 0.0;
-                });
-              },
-            ),
-          ),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: Text(
-              '총 자산',
-              style: TextStyle(fontSize: 24.0),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Text(
-              '\u20A9${(totalAssets).toStringAsFixed(2)}',
-              style:
-                  const TextStyle(fontSize: 36.0, fontWeight: FontWeight.bold),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  _cash = _tempData['cash'] as double;
-                  _stock = _tempData['stock'] as double;
-                  _realestate = _tempData['realestate'] as double;
-                  _crypto = _tempData['crypto'] as double;
-                  _other = _tempData['other'] as double;
-                });
-                _saveData();
-              },
-              child: const Text('저장'),
-            ),
-          ),
-        ],
-      ),
-    );
+        ));
   }
 }
 
 class StockPageContent extends StatefulWidget {
   const StockPageContent({Key? key}) : super(key: key);
-
 
   @override
   _StockPageContentState createState() => _StockPageContentState();
@@ -677,7 +720,6 @@ class _StockPageContentState extends State<StockPageContent> {
       throw Exception('Failed to load coins');
     }
   }
-
   @override
   void initState() {
     fetchCoin();
