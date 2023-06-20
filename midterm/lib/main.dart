@@ -404,9 +404,9 @@ class BudgetScreenState extends State<BudgetScreen> {
                 child: ElevatedButton(
                   onPressed: () {
                     setState(() {
-                      _income = _tempData['income'] as double;
-                      _expenses = _tempData['expenses'] as double;
-                      _asset = _tempData['asset'] as double;
+                      _income = _tempData['income'] ?? 0.0;
+                      _expenses = _tempData['expenses'] ?? 0.0;
+                      _asset = _tempData['asset'] ?? 0.0;
                     });
                     _saveData();
                   },
