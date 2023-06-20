@@ -4,7 +4,7 @@ class CoinCard extends StatelessWidget {
   CoinCard({
     required this.name,
     required this.symbol,
-    required this.imageUrl,
+    required this.image,
     required this.price,
     required this.change,
     required this.changePercentage,
@@ -13,7 +13,7 @@ class CoinCard extends StatelessWidget {
 
   String name;
   String symbol;
-  String imageUrl;
+  String image;
   double price;
   double change;
   double changePercentage;
@@ -69,7 +69,7 @@ class CoinCard extends StatelessWidget {
                 width: 60,
                 child: Padding(
                   padding: const EdgeInsets.all(10.0),
-                  child: Image.network(imageUrl),
+                  child: Image.network(image),
                 ),
               ),
             ),
@@ -108,7 +108,7 @@ class CoinCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    price.toDouble().toString(),
+                    "\$"+ price.toDouble().toString(),
                     style: TextStyle(
                       color: Colors.grey[900],
                       fontSize: 20,
@@ -117,8 +117,8 @@ class CoinCard extends StatelessWidget {
                   ),
                   Text(
                     change.toDouble() < 0
-                        ? change.toDouble().toString()
-                        : '+' + change.toDouble().toString(),
+                        ? change.toDouble().toStringAsFixed(6)
+                        : '+' + change.toDouble().toStringAsFixed(6),
                     style: TextStyle(
                       color: change.toDouble() < 0 ? Colors.red : Colors.green,
                       fontSize: 18,
@@ -127,8 +127,8 @@ class CoinCard extends StatelessWidget {
                   ),
                   Text(
                     changePercentage.toDouble() < 0
-                        ? changePercentage.toDouble().toString() + '%'
-                        : '+' + changePercentage.toDouble().toString() + '%',
+                        ? changePercentage.toDouble().toStringAsFixed(2) + '%'
+                        : '+' + changePercentage.toDouble().toStringAsFixed(2) + '%',
                     style: TextStyle(
                       color: changePercentage.toDouble() < 0
                           ? Colors.red
