@@ -59,11 +59,6 @@ class MainPageState extends State<MainPage> {
     }
   }
 
-  final List<Widget> _screens = [
-    const MainPageContent(showTotal: 0.0),
-    const StockPageContent(),
-  ];
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
