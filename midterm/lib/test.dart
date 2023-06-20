@@ -24,7 +24,7 @@ class StockPageContent extends StatelessWidget {
 }
 
 class CoinCard extends StatelessWidget {
-  CoinCard({
+  CoinCard({super.key, 
     required this.name,
     required this.symbol,
     required this.imageUrl,
@@ -141,7 +141,7 @@ class CoinCard extends StatelessWidget {
                   Text(
                     change.toDouble() < 0
                       ? change.toDouble().toString()
-                      : '+' + change.toDouble().toString(),
+                      : '+${change.toDouble()}',
                     style: TextStyle(
                       color: change.toDouble() < 0 ? Colors.red : Colors.green,
                       fontSize: 18,
@@ -150,8 +150,8 @@ class CoinCard extends StatelessWidget {
                   ),
                   Text(
                     changePercentage.toDouble() < 0
-                      ? changePercentage.toDouble.toString() + '%'
-                      : '+' + changePercentage.toDouble.toString() + '%',
+                      ? '${changePercentage.toDouble}%'
+                      : '+${changePercentage.toDouble}%',
                     style: TextStyle(
                       color: changePercentage.toDouble() < 0 
                       ? Colors.red

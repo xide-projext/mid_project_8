@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class CoinCard extends StatelessWidget {
-  CoinCard({
+  CoinCard({super.key, 
     required this.name,
     required this.symbol,
     required this.image,
@@ -108,7 +108,7 @@ class CoinCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    "\$"+ price.toDouble().toString(),
+                    "\$${price.toDouble()}",
                     style: TextStyle(
                       color: Colors.grey[900],
                       fontSize: 20,
@@ -118,7 +118,7 @@ class CoinCard extends StatelessWidget {
                   Text(
                     change.toDouble() < 0
                         ? change.toDouble().toStringAsFixed(6)
-                        : '+' + change.toDouble().toStringAsFixed(6),
+                        : '+${change.toDouble().toStringAsFixed(6)}',
                     style: TextStyle(
                       color: change.toDouble() < 0 ? Colors.red : Colors.green,
                       fontSize: 18,
@@ -127,8 +127,8 @@ class CoinCard extends StatelessWidget {
                   ),
                   Text(
                     changePercentage.toDouble() < 0
-                        ? changePercentage.toDouble().toStringAsFixed(2) + '%'
-                        : '+' + changePercentage.toDouble().toStringAsFixed(2) + '%',
+                        ? '${changePercentage.toDouble().toStringAsFixed(2)}%'
+                        : '+${changePercentage.toDouble().toStringAsFixed(2)}%',
                     style: TextStyle(
                       color: changePercentage.toDouble() < 0
                           ? Colors.red
